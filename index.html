@@ -9,6 +9,19 @@
 body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;background:#060b14;color:#fff;}
 .app{padding:10px;max-width:700px;margin:0 auto;}
 
+/* APIキー画面 */
+#apikey-screen{position:fixed;inset:0;background:#060b14;display:flex;align-items:center;justify-content:center;z-index:200;}
+.apikey-box{background:#0d1828;border:1px solid #C89B3C88;border-radius:14px;padding:28px 24px;max-width:360px;width:90%;text-align:center;}
+.apikey-box h2{font-size:15px;color:#C89B3C;margin-bottom:8px;}
+.apikey-box p{font-size:11px;color:#5a7090;margin-bottom:16px;line-height:1.6;}
+.apikey-in{width:100%;background:#060b14;border:1px solid #1e3050;border-radius:8px;color:#c8d8f0;padding:9px 12px;font-size:13px;margin-bottom:10px;}
+.apikey-in:focus{outline:none;border-color:#5b9cf6;}
+.apikey-save{width:100%;padding:10px;background:#1a3a6a;color:#88c0f8;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;}
+.apikey-save:hover{background:#1e4a7a;}
+.apikey-err{font-size:11px;color:#dd4444;margin-top:6px;min-height:16px;}
+.apikey-btn{background:none;border:none;color:#3a5070;font-size:16px;cursor:pointer;padding:2px 6px;border-radius:5px;}
+.apikey-btn:hover{color:#7a9ab8;}
+
 /* フェーズバー */
 .phase-bar{background:#0a1020;border:0.5px solid #1e3050;border-radius:8px;padding:8px 12px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .phase-title{font-size:13px;font-weight:700;color:#C89B3C;white-space:nowrap;}
@@ -108,11 +121,24 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
 </style>
 </head>
 <body>
+
+<!-- APIキー入力画面 -->
+<div id="apikey-screen" style="display:none;">
+  <div class="apikey-box">
+    <h2>Anthropic APIキーを設定</h2>
+    <p>Claude APIキーを入力してください。<br>キーはブラウザのlocalStorageに保存されます。</p>
+    <input class="apikey-in" id="apikey-in" type="password" placeholder="sk-ant-..."/>
+    <button class="apikey-save" onclick="saveApiKey()">保存して始める</button>
+    <div class="apikey-err" id="apikey-err"></div>
+  </div>
+</div>
+
 <div class="app">
   <div class="phase-bar">
     <div class="phase-title" id="phase-title">チーム選択</div>
     <div class="phase-desc" id="phase-desc">あなたのチームカラーを選択</div>
     <div class="phase-count" id="phase-count"></div>
+    <button class="apikey-btn" title="APIキー変更" onclick="showApiKeyScreen()">⚙</button>
   </div>
 
   <!-- チーム色選択画面 -->
@@ -368,14 +394,17 @@ const RJ={TOP:'トップ',JG:'ジャングル',MID:'ミッド',BOT:'ボット',S
 const RC={TOP:'#4a7aaa',JG:'#4a9a6a',MID:'#9a7aaa',BOT:'#aa7a4a',SUP:'#aa4a7a'};
 const INI={AurelionSol:'AS',TwistedFate:'TF',DrMundo:'DM',MasterYi:'MY',MissFortune:'MF',MonkeyKing:'WK',TahmKench:'TK',XinZhao:'XZ',JarvanIV:'J4',LeeSin:'LS',KSante:'KS'};
 function ini(c){return INI[c.k]||c.n.slice(0,2);}
-function iconPath(k){return`https://ddragon.leagueoflegends.com/cdn/latest/img/champion/${k}.png`;}
+function iconPath(k){return`./icons/${k}.png`;}
+const DDR_URL=k=>`https://ddragon.leagueoflegends.com/cdn/latest/img/champion/${k}.png`;
 
 function iconEl(c,size){
   const r=size>40?6:4;
   const fs=size>40?12:9;
+  const fallback=`this.onerror=null;this.src='${DDR_URL(c.k)}'`;
+  const err2=`this.outerHTML='<div style=width:${size}px;height:${size}px;border-radius:${r}px;background:${c.c};display:flex;align-items:center;justify-content:center;font-size:${fs}px;font-weight:700;color:#fff;flex-shrink:0>${ini(c)}</div>'`;
   return`<img src="${iconPath(c.k)}" width="${size}" height="${size}"
     style="border-radius:${r}px;object-fit:cover;display:block;flex-shrink:0;"
-    onerror="this.outerHTML='<div style=width:${size}px;height:${size}px;border-radius:${r}px;background:${c.c};display:flex;align-items:center;justify-content:center;font-size:${fs}px;font-weight:700;color:#fff;flex-shrink:0>${ini(c)}</div>'">`;
+    onerror="${fallback};this.onerror=function(){${err2}}">`;
 }
 
 // ===== ドラフト状態 =====
@@ -754,19 +783,36 @@ async function fetchAdvice(isFinal){
 【おすすめミッドピック】のセクションのみ回答してください：
 相手の現在の構成と自チームの噛み合いを踏まえ、今ピックすべきミッドチャンピオンを3体、それぞれ1〜2文で理由を添えて教えてください。`;
 
+  let text='';
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:isFinal?1200:500,messages:[{role:'user',content:prompt}]})
-    });
-    if(!res.ok){
-      const err=await res.text();
-      area.innerHTML=`<div class="abox"><div class="abody" style="color:#aa4040">APIエラー (${res.status}):<br>${esc(err.slice(0,300))}</div></div>`;
-      return;
+    // Artifact環境（window.claude）を優先
+    if(typeof window.claude?.complete==='function'){
+      text=await window.claude.complete(prompt);
+    } else {
+      // GitHub Pages環境: localStorageのAPIキーでfetch
+      const apiKey=localStorage.getItem('anthropic_api_key')||'';
+      if(!apiKey){
+        showApiKeyScreen();
+        area.innerHTML='';
+        return;
+      }
+      const res=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'x-api-key':apiKey,
+          'anthropic-version':'2023-06-01'
+        },
+        body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:isFinal?1200:500,messages:[{role:'user',content:prompt}]})
+      });
+      if(!res.ok){
+        const err=await res.text();
+        area.innerHTML=`<div class="abox"><div class="abody" style="color:#aa4040">APIエラー (${res.status}):<br>${esc(err.slice(0,300))}</div></div>`;
+        return;
+      }
+      const data=await res.json();
+      text=data.content.map(b=>b.text||'').join('');
     }
-    const data=await res.json();
-    const text=data.content.map(b=>b.text||'').join('');
 
     if(isFinal){
       const secs=[
@@ -807,6 +853,28 @@ async function fetchAdvice(isFinal){
 }
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ===== APIキー管理 =====
+function showApiKeyScreen(){
+  document.getElementById('apikey-err').textContent='';
+  document.getElementById('apikey-in').value=localStorage.getItem('anthropic_api_key')||'';
+  document.getElementById('apikey-screen').style.display='flex';
+}
+
+function saveApiKey(){
+  const val=document.getElementById('apikey-in').value.trim();
+  if(!val.startsWith('sk-ant-')){
+    document.getElementById('apikey-err').textContent='sk-ant- で始まるキーを入力してください';
+    return;
+  }
+  localStorage.setItem('anthropic_api_key',val);
+  document.getElementById('apikey-screen').style.display='none';
+}
+
+// Artifact環境ならAPIキー画面不要、GitHub Pages環境はキーがなければ表示
+if(typeof window.claude?.complete!=='function' && !localStorage.getItem('anthropic_api_key')){
+  showApiKeyScreen();
+}
 
 renderAll();
 </script>
