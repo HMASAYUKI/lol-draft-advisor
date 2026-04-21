@@ -15,7 +15,7 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
 .phase-desc{font-size:11px;color:#5a7090;flex:1;text-align:center;}
 .phase-count{font-size:11px;color:#3a5070;white-space:nowrap;}
 
-/* FP選択 */
+/* チーム選択・FP選択 */
 .fp-select{background:#0a1020;border:0.5px solid #C89B3C55;border-radius:8px;padding:12px;margin-bottom:10px;text-align:center;}
 .fp-select p{font-size:12px;color:#7a9ab8;margin-bottom:10px;}
 .fp-btns{display:flex;gap:10px;justify-content:center;}
@@ -99,17 +99,29 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
 <body>
 <div class="app">
   <div class="phase-bar">
-    <div class="phase-title" id="phase-title">BANフェーズ</div>
-    <div class="phase-desc" id="phase-desc">クリックでBANに追加（10体）</div>
-    <div class="phase-count" id="phase-count">0/10</div>
+    <div class="phase-title" id="phase-title">チーム選択</div>
+    <div class="phase-desc" id="phase-desc">あなたのチームカラーを選択</div>
+    <div class="phase-count" id="phase-count"></div>
   </div>
 
+  <!-- チーム色選択画面 -->
+  <div id="team-select">
+    <div class="fp-select">
+      <p>あなたのチームカラーを選択してください</p>
+      <div class="fp-btns">
+        <button class="fp-btn fp-blue" onclick="setMyTeam('blue')">青チーム</button>
+        <button class="fp-btn fp-red" onclick="setMyTeam('red')">赤チーム</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FP選択画面 -->
   <div id="fp-select" style="display:none;">
     <div class="fp-select">
       <p>どちらがファーストピック（FP）ですか？</p>
       <div class="fp-btns">
-        <button class="fp-btn fp-blue" onclick="setFP('blue')">青チーム（味方）がFP</button>
-        <button class="fp-btn fp-red" onclick="setFP('red')">赤チーム（相手）がFP</button>
+        <button class="fp-btn fp-blue" onclick="setFP('mine')">味方（YOU）がFP</button>
+        <button class="fp-btn fp-red" onclick="setFP('opponent')">相手がFP</button>
       </div>
     </div>
   </div>
@@ -122,11 +134,11 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
   <div class="bans-section">
     <div class="bans-inner">
       <div>
-        <div class="ban-label" style="color:#4a80cc">青チーム BAN</div>
+        <div class="ban-label" id="blue-ban-label" style="color:#4a80cc">青チーム BAN</div>
         <div class="ban-row" id="blue-bans"></div>
       </div>
       <div>
-        <div class="ban-label" style="color:#cc4a4a;text-align:right">赤チーム BAN</div>
+        <div class="ban-label" id="red-ban-label" style="color:#cc4a4a;text-align:right">赤チーム BAN</div>
         <div class="ban-row" id="red-bans" style="justify-content:flex-end"></div>
       </div>
     </div>
@@ -134,12 +146,12 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
 
   <div class="draft-board">
     <div class="team-col">
-      <div class="team-label blue-lbl">青チーム（味方）</div>
+      <div class="team-label blue-lbl" id="blue-team-label">青チーム</div>
       <div id="blue-picks"></div>
     </div>
     <div class="vs-col">VS</div>
     <div class="team-col">
-      <div class="team-label red-lbl">赤チーム（相手）</div>
+      <div class="team-label red-lbl" id="red-team-label">赤チーム</div>
       <div id="red-picks"></div>
     </div>
   </div>
@@ -154,7 +166,7 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
 
 <script>
 // ひらがな→カタカナ変換
-function hira2kata(str){return str.replace(/[\u3041-\u3096]/g,c=>String.fromCharCode(c.charCodeAt(0)+0x60));}
+function hira2kata(str){return str.replace(/[ぁ-ゖ]/g,c=>String.fromCharCode(c.charCodeAt(0)+0x60));}
 
 const CHAMPS=[
   {k:'Ahri',      n:'Ahri',          j:'アーリ',              h:'あーり',          c:'#7a2080'},
@@ -220,27 +232,27 @@ function iconEl(c,size){
 }
 
 // ===== ドラフト状態 =====
-// phase: 'ban' | 'fp-select' | 'pick'
-// banSequence: 青3,赤3,青2,赤2 の順
-// pickSequence: FPに応じて決まる
+// phase: 'team-select' | 'fp-select' | 'ban' | 'pick'
+let phase='team-select';
+let myTeam=null;  // 'blue' or 'red'（自分のチーム色）
+let fpTeam=null;  // 'blue' or 'red'（FPチーム）
 
-let phase='ban';
-let fpTeam=null; // 'blue' or 'red'
+// BANシーケンス: 味方5体 → 相手5体（myTeam確定後に生成）
+function getBanOrder(){
+  if(!myTeam)return[];
+  const op=myTeam==='blue'?'red':'blue';
+  return[myTeam,myTeam,myTeam,myTeam,myTeam,op,op,op,op,op];
+}
 
-// BANシーケンス: 青0,1,2 → 赤0,1,2 → 青3,4 → 赤3,4
-const BAN_ORDER=['blue','blue','blue','red','red','red','blue','blue','red','red'];
 let bans={blue:[null,null,null,null,null],red:[null,null,null,null,null]};
-let banStep=0; // 0~9
+let banStep=0;
 
-// PICKシーケンス (FP=blue の場合): blue,red,red,blue,blue,red,red,blue,blue,red
-// FP=red の場合は blue↔red を反転
-const PICK_SEQ_FP= ['fp','op','op','fp','fp','op','op','fp','fp','op']; // fp=ファーストピック側, op=相手側
+// PICKシーケンス (fp=ファーストピック側, op=相手側)
+const PICK_SEQ_FP=['fp','op','op','fp','fp','op','op','fp','fp','op'];
 let picks={blue:[null,null,null,null,null],red:[null,null,null,null,null]};
 let pickStep=0;
 
-// undoスタック
 let history=[];
-
 let filtered=[...CHAMPS];
 let advTm=null,lastKey='';
 
@@ -250,7 +262,6 @@ function usedKeys(){
   return[...b,...p];
 }
 
-// ひらがな・カタカナ・英語で検索
 function filterChamps(){
   const raw=document.getElementById('search').value;
   const q=hira2kata(raw).toLowerCase();
@@ -286,21 +297,20 @@ function onChampClick(idx){
   const c=CHAMPS[idx];
   if(usedKeys().includes(c.k))return;
 
+  const banOrder=getBanOrder();
+
   if(phase==='ban'){
-    // BANフェーズ
-    const team=BAN_ORDER[banStep];
+    const team=banOrder[banStep];
     const slotIdx=bans[team].findIndex(x=>x===null);
     history.push({type:'ban',team,slotIdx,champ:c,banStep});
     bans[team][slotIdx]=c;
     banStep++;
     if(banStep>=10){
-      phase='fp-select';
-      document.getElementById('fp-select').style.display='block';
+      phase='pick';
     }
     renderAll();
   } else if(phase==='pick'){
-    // PICKフェーズ
-    const seqTeam=PICK_SEQ_FP[pickStep]; // 'fp' or 'op'
+    const seqTeam=PICK_SEQ_FP[pickStep];
     const team=(seqTeam==='fp')?fpTeam:(fpTeam==='blue'?'red':'blue');
     const slotIdx=picks[team].findIndex(x=>x===null);
     history.push({type:'pick',team,slotIdx,champ:c,pickStep});
@@ -309,15 +319,23 @@ function onChampClick(idx){
     renderAll();
     scheduleAdvice();
     if(pickStep>=10){
-      // 全員確定
       fetchAdvice(true);
     }
   }
 }
 
-function setFP(team){
-  fpTeam=team;
-  phase='pick';
+function setMyTeam(color){
+  myTeam=color;
+  phase='fp-select';
+  document.getElementById('team-select').style.display='none';
+  document.getElementById('fp-select').style.display='block';
+  renderAll();
+}
+
+function setFP(who){
+  // who: 'mine'（味方がFP）or 'opponent'（相手がFP）
+  fpTeam=who==='mine'?myTeam:(myTeam==='blue'?'red':'blue');
+  phase='ban';
   document.getElementById('fp-select').style.display='none';
   renderAll();
 }
@@ -329,7 +347,6 @@ function undoLast(){
     bans[last.team][last.slotIdx]=null;
     banStep=last.banStep;
     phase='ban';
-    document.getElementById('fp-select').style.display='none';
   } else {
     picks[last.team][last.slotIdx]=null;
     pickStep=last.pickStep;
@@ -340,13 +357,20 @@ function undoLast(){
 }
 
 function resetAll(){
-  phase='ban';fpTeam=null;banStep=0;pickStep=0;history=[];
+  phase='team-select';
+  myTeam=null;
+  fpTeam=null;
+  banStep=0;
+  pickStep=0;
+  history=[];
   bans={blue:[null,null,null,null,null],red:[null,null,null,null,null]};
   picks={blue:[null,null,null,null,null],red:[null,null,null,null,null]};
+  document.getElementById('team-select').style.display='block';
   document.getElementById('fp-select').style.display='none';
   document.getElementById('advice-area').innerHTML='';
   document.getElementById('search').value='';
-  filtered=[...CHAMPS];lastKey='';
+  filtered=[...CHAMPS];
+  lastKey='';
   if(advTm)clearTimeout(advTm);
   renderAll();
 }
@@ -362,24 +386,32 @@ function renderPhaseBar(){
   const title=document.getElementById('phase-title');
   const desc=document.getElementById('phase-desc');
   const count=document.getElementById('phase-count');
-  if(phase==='ban'){
-    title.textContent='BANフェーズ';
-    const banTeam=BAN_ORDER[banStep];
-    const teamLabel=banTeam==='blue'?'青チーム':'赤チーム';
-    const teamColor=banTeam==='blue'?'#5b9cf6':'#f06060';
-    desc.innerHTML=`次のBAN: <span style="color:${teamColor};font-weight:700">${teamLabel}</span>`;
-    count.textContent=`${banStep}/10`;
+
+  if(phase==='team-select'){
+    title.textContent='チーム選択';
+    desc.textContent='あなたのチームカラーを選択';
+    count.textContent='';
   } else if(phase==='fp-select'){
     title.textContent='FP選択';
     desc.textContent='ファーストピックのチームを選択';
     count.textContent='';
+  } else if(phase==='ban'){
+    title.textContent='BANフェーズ';
+    const banOrder=getBanOrder();
+    const banTeam=banOrder[banStep];
+    const isMyBan=banTeam===myTeam;
+    const teamLabel=isMyBan?'YOU':'相手';
+    const teamColor=banTeam==='blue'?'#5b9cf6':'#f06060';
+    desc.innerHTML=`次のBAN: <span style="color:${teamColor};font-weight:700">${teamLabel}</span>`;
+    count.textContent=`${banStep}/10`;
   } else {
     title.textContent='PICKフェーズ';
     if(pickStep<10){
-      const seqTeam=PICK_SEQ_FP[pickStep];
-      const team=(seqTeam==='fp')?fpTeam:(fpTeam==='blue'?'red':'blue');
-      const teamName=team==='blue'?'青チーム':'赤チーム';
-      desc.textContent=`次のPICK: ${teamName}`;
+      const seqTeam=PICK_SEQ_FP[pickStep]==='fp'?fpTeam:(fpTeam==='blue'?'red':'blue');
+      const isMyTurn=seqTeam===myTeam;
+      const teamName=isMyTurn?'YOU':'相手';
+      const teamColor=seqTeam==='blue'?'#5b9cf6':'#f06060';
+      desc.innerHTML=`次のPICK: <span style="color:${teamColor};font-weight:700">${teamName}</span>`;
     } else {
       desc.textContent='全員確定！';
     }
@@ -388,8 +420,18 @@ function renderPhaseBar(){
 }
 
 function renderBans(){
+  const banOrder=getBanOrder();
+
+  // バンラベル更新
+  const blueLbl=document.getElementById('blue-ban-label');
+  const redLbl=document.getElementById('red-ban-label');
+  if(myTeam){
+    blueLbl.textContent=(myTeam==='blue'?'YOU':'相手')+' BAN';
+    redLbl.textContent=(myTeam==='red'?'YOU':'相手')+' BAN';
+  }
+
   const mk=(b,i,team)=>{
-    const isNext=phase==='ban' && BAN_ORDER[banStep]===team && bans[team].filter(Boolean).length===i;
+    const isNext=phase==='ban' && banOrder[banStep]===team && bans[team].filter(Boolean).length===i;
     const nextCls=isNext?(team==='blue'?' next-ban-blue':' next-ban-red'):'';
     const labelColor=team==='blue'?'#5b9cf6':'#f06060';
     if(!b)return`<div class="ban-slot${nextCls}">${isNext?`<div class="next-ban-lbl"><div class="next-ban-arrow" style="color:${labelColor}">▼</div><div class="next-ban-lbl-text" style="color:${labelColor}">BAN</div></div>`:''}</div>`;
@@ -405,13 +447,27 @@ function renderBans(){
 }
 
 function renderPicks(){
+  // チームラベル更新
+  const blueTeamLbl=document.getElementById('blue-team-label');
+  const redTeamLbl=document.getElementById('red-team-label');
+  if(myTeam){
+    blueTeamLbl.textContent=myTeam==='blue'?'YOU':'相手チーム';
+    redTeamLbl.textContent=myTeam==='red'?'YOU':'相手チーム';
+  } else {
+    blueTeamLbl.textContent='青チーム';
+    redTeamLbl.textContent='赤チーム';
+  }
+
   const mk=(c,slotIdx,team)=>{
     const f=!!c;
     const rc=RC[ROLES[slotIdx]]||'#4a6a8a';
     const role=ROLES[slotIdx];
-    const isMine=team==='blue'&&slotIdx===2; // ミッド=YOU
+    const isMyTeam=team===myTeam;
+    const isMine=isMyTeam&&slotIdx===2; // ミッド=YOU
 
-    // 次にPICKされる枠をハイライト
+    // 相手チームのロールは番号表示
+    const roleDisplay=isMyTeam?RJ[role]:`${slotIdx+1}番`;
+
     let isNext=false;
     if(phase==='pick'&&pickStep<10){
       const seqTeam=PICK_SEQ_FP[pickStep]==='fp'?fpTeam:(fpTeam==='blue'?'red':'blue');
@@ -430,9 +486,9 @@ function renderPicks(){
       ${f
         ?`${iconEl(c,36)}
           <span class="sname" style="color:${team==='red'?'#f08888':'#c8d8f0'}">${c.j}</span>
-          <span class="rbadge" style="background:${rc}22;color:${rc}">${RJ[role]}</span>
+          <span class="rbadge" style="background:${rc}22;color:${rc}">${roleDisplay}</span>
           ${isMine?'<span class="mbadge">YOU</span>':''}`
-        :`<span style="font-size:11px;color:${isNext?'#C89B3C':'#1e3050'}">${RJ[role]}</span>`
+        :`<span style="font-size:11px;color:${isNext?'#C89B3C':'#1e3050'}">${roleDisplay}</span>`
       }
     </div>`;
   };
@@ -460,19 +516,20 @@ async function fetchAdvice(isFinal){
   area.innerHTML=`<div class="abox"><div class="lrow"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>${isFinal?'最終アドバイスを生成中...':'ピック候補を更新中...'}</span></div></div>`;
   area.scrollIntoView({behavior:'smooth',block:'nearest'});
 
-  const bp=picks.blue.filter(Boolean).map((c,i)=>`${c.j}(${RJ[ROLES[i]]})`).join('、')||'なし';
-  const rp=picks.red.filter(Boolean).map((c,i)=>`${c.j}(${RJ[ROLES[i]]})`).join('、')||'なし';
-  const bb=bans.blue.filter(Boolean).map(c=>c.j).join('、')||'なし';
-  const rb=bans.red.filter(Boolean).map(c=>c.j).join('、')||'なし';
-  const myMid=picks.blue[2];
+  const opTeam=myTeam==='blue'?'red':'blue';
+  const myP=picks[myTeam].filter(Boolean).map((c,i)=>`${c.j}(${RJ[ROLES[i]]})`).join('、')||'なし';
+  const opP=picks[opTeam].filter(Boolean).map((c,i)=>`${c.j}(${i+1}番)`).join('、')||'なし';
+  const myB=bans[myTeam].filter(Boolean).map(c=>c.j).join('、')||'なし';
+  const opB=bans[opTeam].filter(Boolean).map(c=>c.j).join('、')||'なし';
+  const myMid=picks[myTeam][2];
 
   const prompt=isFinal
     ?`あなたはLoLの上級コーチです。以下のドラフト確定情報をもとに日本語で詳細アドバイスをください。
 
-自チーム（青）: ${bp}
-相手チーム（赤）: ${rp}
-自チームのBAN: ${bb}
-相手チームのBAN: ${rb}
+自チーム（YOU）: ${myP}
+相手チーム: ${opP}
+自チームのBAN: ${myB}
+相手チームのBAN: ${opB}
 自分のチャンピオン（ミッド）: ${myMid?myMid.j:'未確定'}
 
 以下の4つのセクションで回答してください（プレーンテキスト、マークダウン不使用）：
@@ -490,9 +547,9 @@ async function fetchAdvice(isFinal){
 この構成で勝てる理由・負けパターン・相手への具体的な対策`
     :`あなたはLoLの上級コーチです。ドラフト途中の状況を踏まえて日本語で簡潔にアドバイスください。
 
-自チーム（青）のピック済み: ${bp}
-相手チーム（赤）のピック済み: ${rp}
-自チームのBAN: ${bb} / 相手のBAN: ${rb}
+自チーム（YOU）のピック済み: ${myP}
+相手チームのピック済み: ${opP}
+自チームのBAN: ${myB} / 相手のBAN: ${opB}
 担当ロール: ミッド
 
 【おすすめミッドピック】のセクションのみ回答してください：
