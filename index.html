@@ -43,9 +43,21 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
 .ban-row{display:flex;gap:4px;flex-wrap:wrap;}
 .ban-slot{width:40px;height:40px;border-radius:5px;border:0.5px dashed #2a1a1a;background:#0d0808;position:relative;overflow:hidden;flex-shrink:0;}
 .ban-slot.filled{border:0.5px solid #3a1010;}
-.ban-slot.next-ban{border:1.5px solid #C89B3C;animation:pulse .8s infinite alternate;}
+.ban-slot.next-ban-blue{border:2px solid #5b9cf6;animation:pulse-ban-blue .7s infinite alternate;background:#04101e;}
+.ban-slot.next-ban-red{border:2px solid #f06060;animation:pulse-ban-red .7s infinite alternate;background:#1a0404;}
+.next-ban-lbl{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;pointer-events:none;}
+.next-ban-lbl-text{font-size:8px;font-weight:800;letter-spacing:.04em;line-height:1;}
+.next-ban-arrow{font-size:13px;line-height:1;}
 .ban-icon{width:40px;height:40px;object-fit:cover;filter:grayscale(80%) brightness(0.35);display:block;}
 .ban-x{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:15px;color:#dd3333;font-weight:700;}
+@keyframes pulse-ban-blue{
+  from{border-color:#5b9cf6;box-shadow:0 0 6px #5b9cf655,inset 0 0 6px #5b9cf622;}
+  to{border-color:#88c0ff;box-shadow:0 0 14px #5b9cf6aa,inset 0 0 10px #5b9cf644;background:#071624;}
+}
+@keyframes pulse-ban-red{
+  from{border-color:#f06060;box-shadow:0 0 6px #f0606055,inset 0 0 6px #f0606022;}
+  to{border-color:#ff9090;box-shadow:0 0 14px #f06060aa,inset 0 0 10px #f0606044;background:#1e0606;}
+}
 @keyframes pulse{from{border-color:#C89B3C}to{border-color:#C89B3C88}}
 
 /* ドラフトボード */
@@ -352,8 +364,10 @@ function renderPhaseBar(){
   const count=document.getElementById('phase-count');
   if(phase==='ban'){
     title.textContent='BANフェーズ';
-    const team=BAN_ORDER[banStep]==='blue'?'青チーム':'赤チーム';
-    desc.textContent=`次のBAN: ${team}`;
+    const banTeam=BAN_ORDER[banStep];
+    const teamLabel=banTeam==='blue'?'青チーム':'赤チーム';
+    const teamColor=banTeam==='blue'?'#5b9cf6':'#f06060';
+    desc.innerHTML=`次のBAN: <span style="color:${teamColor};font-weight:700">${teamLabel}</span>`;
     count.textContent=`${banStep}/10`;
   } else if(phase==='fp-select'){
     title.textContent='FP選択';
@@ -375,9 +389,10 @@ function renderPhaseBar(){
 
 function renderBans(){
   const mk=(b,i,team)=>{
-    // 次にBANされる枠をハイライト
     const isNext=phase==='ban' && BAN_ORDER[banStep]===team && bans[team].filter(Boolean).length===i;
-    if(!b)return`<div class="ban-slot${isNext?' next-ban':''}"></div>`;
+    const nextCls=isNext?(team==='blue'?' next-ban-blue':' next-ban-red'):'';
+    const labelColor=team==='blue'?'#5b9cf6':'#f06060';
+    if(!b)return`<div class="ban-slot${nextCls}">${isNext?`<div class="next-ban-lbl"><div class="next-ban-arrow" style="color:${labelColor}">▼</div><div class="next-ban-lbl-text" style="color:${labelColor}">BAN</div></div>`:''}</div>`;
     return`<div class="ban-slot filled">
       <img src="${iconPath(b.k)}" width="40" height="40"
         style="object-fit:cover;filter:grayscale(80%) brightness(0.35);display:block;"
