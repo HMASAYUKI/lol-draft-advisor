@@ -9,33 +9,44 @@
 body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;background:#060b14;color:#fff;}
 .app{padding:10px;max-width:700px;margin:0 auto;}
 
+/* フェーズバー */
+.phase-bar{background:#0a1020;border:0.5px solid #1e3050;border-radius:8px;padding:8px 12px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.phase-title{font-size:13px;font-weight:700;color:#C89B3C;white-space:nowrap;}
+.phase-desc{font-size:11px;color:#5a7090;flex:1;text-align:center;}
+.phase-count{font-size:11px;color:#3a5070;white-space:nowrap;}
+
+/* FP選択 */
+.fp-select{background:#0a1020;border:0.5px solid #C89B3C55;border-radius:8px;padding:12px;margin-bottom:10px;text-align:center;}
+.fp-select p{font-size:12px;color:#7a9ab8;margin-bottom:10px;}
+.fp-btns{display:flex;gap:10px;justify-content:center;}
+.fp-btn{padding:10px 28px;font-size:13px;font-weight:700;border-radius:7px;border:none;cursor:pointer;}
+.fp-blue{background:#1a4a8a;color:#88c0f8;}
+.fp-red{background:#4a1a1a;color:#f08080;}
+
+/* 検索 */
 .search-bar{display:flex;gap:8px;margin-bottom:8px;align-items:center;}
 .search-in{flex:1;background:#101825;border:1px solid #1e3050;border-radius:8px;color:#c8d8f0;padding:7px 11px;font-size:14px;}
 .search-in:focus{outline:none;border-color:#5b9cf6;}
 .search-in::placeholder{color:#2a3a50;}
-.phase-ind{font-size:10px;padding:3px 10px;border-radius:10px;background:#0a1020;color:#3a5070;border:0.5px solid #1e3050;white-space:nowrap;}
 
 /* チャンプグリッド */
 .champ-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:5px;margin-bottom:10px;max-height:220px;overflow-y:auto;}
 .cc{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:3px;border-radius:7px;border:2px solid transparent;transition:border-color .1s,background .1s;}
 .cc:hover{background:#151f30;}
-.cc.sel{border-color:#C89B3C;background:#1a1500;}
 .cc.used{opacity:.15;pointer-events:none;}
-.cicon{width:52px;height:52px;border-radius:6px;object-fit:cover;display:block;background:#0d1520;}
-.cicon-fallback{width:52px;height:52px;border-radius:6px;background:#1a2535;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#4a7aaa;}
 .cname{font-size:9px;color:#5a7090;text-align:center;white-space:nowrap;overflow:hidden;width:100%;text-overflow:ellipsis;}
-.cc.sel .cname{color:#C89B3C;}
 
-/* BAN */
+/* BANエリア */
 .bans-section{margin-bottom:8px;}
 .bans-inner{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .ban-label{font-size:9px;letter-spacing:.06em;margin-bottom:3px;}
 .ban-row{display:flex;gap:4px;flex-wrap:wrap;}
-.ban-slot{width:40px;height:40px;border-radius:5px;border:0.5px dashed #2a1a1a;background:#0d0808;cursor:pointer;position:relative;overflow:hidden;flex-shrink:0;}
+.ban-slot{width:40px;height:40px;border-radius:5px;border:0.5px dashed #2a1a1a;background:#0d0808;position:relative;overflow:hidden;flex-shrink:0;}
 .ban-slot.filled{border:0.5px solid #3a1010;}
+.ban-slot.next-ban{border:1.5px solid #C89B3C;animation:pulse .8s infinite alternate;}
 .ban-icon{width:40px;height:40px;object-fit:cover;filter:grayscale(80%) brightness(0.35);display:block;}
-.ban-fb{width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;filter:brightness(0.35);}
 .ban-x{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:15px;color:#dd3333;font-weight:700;}
+@keyframes pulse{from{border-color:#C89B3C}to{border-color:#C89B3C88}}
 
 /* ドラフトボード */
 .draft-board{display:grid;grid-template-columns:1fr 28px 1fr;gap:6px;margin-bottom:10px;}
@@ -48,24 +59,18 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
 .pb{background:#0d1a2e;border:1px solid #1e3a5a;}
 .pr{background:#1f0d0d;border:1px solid #3a1a1a;}
 .pm{border-color:#C89B3C88!important;background:#0d1820!important;}
+.next-pick{border:1.5px solid #C89B3C!important;animation:pulse .8s infinite alternate;}
 .rdot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
-.slot-icon{width:36px;height:36px;border-radius:4px;object-fit:cover;flex-shrink:0;background:#0d1520;}
-.slot-fb{width:36px;height:36px;border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;}
 .sname{font-size:12px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .rbadge{font-size:8px;padding:1px 5px;border-radius:6px;flex-shrink:0;}
 .mbadge{font-size:8px;color:#C89B3C;background:#150f00;padding:1px 4px;border-radius:6px;border:0.5px solid #C89B3C55;flex-shrink:0;}
-.rm{background:none;border:none;color:#2a3a4a;cursor:pointer;font-size:14px;padding:0;line-height:1;flex-shrink:0;}
-.rm:hover{color:#8a9bb8;}
 .vs-col{display:flex;align-items:center;justify-content:center;padding-top:24px;font-size:10px;color:#2a3a50;font-weight:700;}
 
 .action-bar{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap;}
 .abtn{padding:8px 12px;font-size:12px;font-weight:700;border-radius:7px;border:none;cursor:pointer;transition:opacity .12s,transform .1s;white-space:nowrap;}
 .abtn:hover{opacity:.82;}.abtn:active{transform:scale(.96);}
-.bp{background:#1a4a8a;color:#88c0f8;}
-.rp{background:#4a1a1a;color:#f08080;}
-.bb{background:#0d2a4a;color:#4a80cc;}
-.rb{background:#2a1010;color:#cc5555;}
 .rs{background:#151a25;color:#3a4a5a;}
+.undo{background:#1a2030;color:#5a7090;}
 
 .advice-wrap{margin-top:4px;}
 .abox{background:#0a1020;border:0.5px solid #1e3050;border-radius:8px;padding:10px;margin-bottom:8px;}
@@ -81,11 +86,27 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
 </head>
 <body>
 <div class="app">
+  <div class="phase-bar">
+    <div class="phase-title" id="phase-title">BANフェーズ</div>
+    <div class="phase-desc" id="phase-desc">クリックでBANに追加（10体）</div>
+    <div class="phase-count" id="phase-count">0/10</div>
+  </div>
+
+  <div id="fp-select" style="display:none;">
+    <div class="fp-select">
+      <p>どちらがファーストピック（FP）ですか？</p>
+      <div class="fp-btns">
+        <button class="fp-btn fp-blue" onclick="setFP('blue')">青チーム（味方）がFP</button>
+        <button class="fp-btn fp-red" onclick="setFP('red')">赤チーム（相手）がFP</button>
+      </div>
+    </div>
+  </div>
+
   <div class="search-bar">
-    <input class="search-in" id="search" placeholder="チャンピオン名で検索（日本語・英語OK）..." oninput="filterChamps()"/>
-    <span class="phase-ind" id="phase-ind">待機中</span>
+    <input class="search-in" id="search" placeholder="チャンピオン名で検索（ひらがな・カタカナ・英語OK）..." oninput="filterChamps()"/>
   </div>
   <div class="champ-grid" id="champ-grid"></div>
+
   <div class="bans-section">
     <div class="bans-inner">
       <div>
@@ -98,6 +119,7 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
       </div>
     </div>
   </div>
+
   <div class="draft-board">
     <div class="team-col">
       <div class="team-label blue-lbl">青チーム（味方）</div>
@@ -109,98 +131,128 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
       <div id="red-picks"></div>
     </div>
   </div>
+
   <div class="action-bar">
-    <button class="abtn bp" onclick="doAction('blue-pick')">味方にピック</button>
-    <button class="abtn rp" onclick="doAction('red-pick')">相手にピック</button>
-    <button class="abtn bb" onclick="doAction('blue-ban')">味方でBAN</button>
-    <button class="abtn rb" onclick="doAction('red-ban')">相手でBAN</button>
+    <button class="abtn undo" onclick="undoLast()">← 戻す</button>
     <button class="abtn rs" onclick="resetAll()">リセット</button>
   </div>
+
   <div class="advice-wrap" id="advice-area"></div>
 </div>
 
 <script>
+// ひらがな→カタカナ変換
+function hira2kata(str){return str.replace(/[\u3041-\u3096]/g,c=>String.fromCharCode(c.charCodeAt(0)+0x60));}
+
 const CHAMPS=[
-  {k:'Ahri',      n:'Ahri',          j:'アーリ',              c:'#7a2080'},
-  {k:'Akali',     n:'Akali',         j:'アカリ',              c:'#1a5a3a'},
-  {k:'Akshan',    n:'Akshan',        j:'アクシャン',          c:'#3a6a1a'},
-  {k:'Anivia',    n:'Anivia',        j:'アニビア',            c:'#2a5a8a'},
-  {k:'Annie',     n:'Annie',         j:'アニー',              c:'#8a3010'},
-  {k:'AurelionSol',n:'Aurelion Sol', j:'オレリオン・ソル',    c:'#3a2880'},
-  {k:'Azir',      n:'Azir',          j:'アジール',            c:'#9a7a10'},
-  {k:'Brand',     n:'Brand',         j:'ブランド',            c:'#9a3a00'},
-  {k:'Cassiopeia',n:'Cassiopeia',    j:'カシオペア',          c:'#2a4a1a'},
-  {k:'Corki',     n:'Corki',         j:'コーキ',              c:'#6a4a10'},
-  {k:'Diana',     n:'Diana',         j:'ダイアナ',            c:'#303070'},
-  {k:'Ekko',      n:'Ekko',          j:'エコー',              c:'#205060'},
-  {k:'Fizz',      n:'Fizz',          j:'フィズ',              c:'#104a8a'},
-  {k:'Galio',     n:'Galio',         j:'ガリオ',              c:'#2a3a5a'},
-  {k:'Heimerdinger',n:'Heimerdinger',j:'ハイマー',            c:'#7a7a10'},
-  {k:'Irelia',    n:'Irelia',        j:'イレリア',            c:'#4a2880'},
-  {k:'Jayce',     n:'Jayce',         j:'ジェイス',            c:'#2a3a6a'},
-  {k:'Katarina',  n:'Katarina',      j:'カタリナ',            c:'#7a1010'},
-  {k:'Leblanc',   n:'LeBlanc',       j:'ルブラン',            c:'#5a2070'},
-  {k:'Lissandra', n:'Lissandra',     j:'リサンドラ',          c:'#103050'},
-  {k:'Lux',       n:'Lux',           j:'ラックス',            c:'#9a7a10'},
-  {k:'Malzahar',  n:'Malzahar',      j:'マルザハール',        c:'#3a1080'},
-  {k:'Naafiri',   n:'Naafiri',       j:'ナーフィリ',          c:'#6a3a10'},
-  {k:'Neeko',     n:'Neeko',         j:'ニーコ',              c:'#106a3a'},
-  {k:'Orianna',   n:'Orianna',       j:'オリアナ',            c:'#7a4a10'},
-  {k:'Pantheon',  n:'Pantheon',      j:'パンテオン',          c:'#4a2a10'},
-  {k:'Qiyana',    n:'Qiyana',        j:'キヤナ',              c:'#2a4a1a'},
-  {k:'Ryze',      n:'Ryze',          j:'ライズ',              c:'#10309a'},
-  {k:'Seraphine', n:'Seraphine',     j:'セラフィーン',        c:'#5a2870'},
-  {k:'Smolder',   n:'Smolder',       j:'スモルダー',          c:'#8a3a10'},
-  {k:'Sylas',     n:'Sylas',         j:'サイラス',            c:'#203050'},
-  {k:'Syndra',    n:'Syndra',        j:'シンドラ',            c:'#3a1880'},
-  {k:'Taliyah',   n:'Taliyah',       j:'タリヤ',              c:'#7a4a20'},
-  {k:'Talon',     n:'Talon',         j:'タロン',              c:'#202040'},
-  {k:'TwistedFate',n:'Twisted Fate', j:'ツイステッドフェイト',c:'#7a6010'},
-  {k:'Veigar',    n:'Veigar',        j:'ベイガー',            c:'#301870'},
-  {k:'Vex',       n:'Vex',           j:'ヴェックス',          c:'#383848'},
-  {k:'Viktor',    n:'Viktor',        j:'ビクター',            c:'#282838'},
-  {k:'Vladimir',  n:'Vladimir',      j:'ブラッドミア',        c:'#6a1010'},
-  {k:'Xerath',    n:'Xerath',        j:'ゼラス',              c:'#104870'},
-  {k:'Yasuo',     n:'Yasuo',         j:'ヤスオ',              c:'#384828'},
-  {k:'Yone',      n:'Yone',          j:'ヨネ',                c:'#282038'},
-  {k:'Zed',       n:'Zed',           j:'ゼド',                c:'#303848'},
-  {k:'Ziggs',     n:'Ziggs',         j:'ジグス',              c:'#787010'},
-  {k:'Zoe',       n:'Zoe',           j:'ゾーイ',              c:'#5a4070'},
+  {k:'Ahri',      n:'Ahri',          j:'アーリ',              h:'あーり',          c:'#7a2080'},
+  {k:'Akali',     n:'Akali',         j:'アカリ',              h:'あかり',          c:'#1a5a3a'},
+  {k:'Akshan',    n:'Akshan',        j:'アクシャン',          h:'あくしゃん',      c:'#3a6a1a'},
+  {k:'Anivia',    n:'Anivia',        j:'アニビア',            h:'あにびあ',        c:'#2a5a8a'},
+  {k:'Annie',     n:'Annie',         j:'アニー',              h:'あにー',          c:'#8a3010'},
+  {k:'AurelionSol',n:'Aurelion Sol', j:'オレリオン・ソル',    h:'おれりおん',      c:'#3a2880'},
+  {k:'Azir',      n:'Azir',          j:'アジール',            h:'あじーる',        c:'#9a7a10'},
+  {k:'Brand',     n:'Brand',         j:'ブランド',            h:'ぶらんど',        c:'#9a3a00'},
+  {k:'Cassiopeia',n:'Cassiopeia',    j:'カシオペア',          h:'かしおぺあ',      c:'#2a4a1a'},
+  {k:'Corki',     n:'Corki',         j:'コーキ',              h:'こーき',          c:'#6a4a10'},
+  {k:'Diana',     n:'Diana',         j:'ダイアナ',            h:'だいあな',        c:'#303070'},
+  {k:'Ekko',      n:'Ekko',          j:'エコー',              h:'えこー',          c:'#205060'},
+  {k:'Fizz',      n:'Fizz',          j:'フィズ',              h:'ふぃず',          c:'#104a8a'},
+  {k:'Galio',     n:'Galio',         j:'ガリオ',              h:'がりお',          c:'#2a3a5a'},
+  {k:'Heimerdinger',n:'Heimerdinger',j:'ハイマー',            h:'はいまー',        c:'#7a7a10'},
+  {k:'Irelia',    n:'Irelia',        j:'イレリア',            h:'いれりあ',        c:'#4a2880'},
+  {k:'Jayce',     n:'Jayce',         j:'ジェイス',            h:'じぇいす',        c:'#2a3a6a'},
+  {k:'Katarina',  n:'Katarina',      j:'カタリナ',            h:'かたりな',        c:'#7a1010'},
+  {k:'Leblanc',   n:'LeBlanc',       j:'ルブラン',            h:'るぶらん',        c:'#5a2070'},
+  {k:'Lissandra', n:'Lissandra',     j:'リサンドラ',          h:'りさんどら',      c:'#103050'},
+  {k:'Lux',       n:'Lux',           j:'ラックス',            h:'らっくす',        c:'#9a7a10'},
+  {k:'Malzahar',  n:'Malzahar',      j:'マルザハール',        h:'まるざはーる',    c:'#3a1080'},
+  {k:'Naafiri',   n:'Naafiri',       j:'ナーフィリ',          h:'なーふぃり',      c:'#6a3a10'},
+  {k:'Neeko',     n:'Neeko',         j:'ニーコ',              h:'にーこ',          c:'#106a3a'},
+  {k:'Orianna',   n:'Orianna',       j:'オリアナ',            h:'おりあな',        c:'#7a4a10'},
+  {k:'Pantheon',  n:'Pantheon',      j:'パンテオン',          h:'ぱんておん',      c:'#4a2a10'},
+  {k:'Qiyana',    n:'Qiyana',        j:'キヤナ',              h:'きやな',          c:'#2a4a1a'},
+  {k:'Ryze',      n:'Ryze',          j:'ライズ',              h:'らいず',          c:'#10309a'},
+  {k:'Seraphine', n:'Seraphine',     j:'セラフィーン',        h:'せらふぃーん',    c:'#5a2870'},
+  {k:'Smolder',   n:'Smolder',       j:'スモルダー',          h:'すもるだー',      c:'#8a3a10'},
+  {k:'Sylas',     n:'Sylas',         j:'サイラス',            h:'さいらす',        c:'#203050'},
+  {k:'Syndra',    n:'Syndra',        j:'シンドラ',            h:'しんどら',        c:'#3a1880'},
+  {k:'Taliyah',   n:'Taliyah',       j:'タリヤ',              h:'たりや',          c:'#7a4a20'},
+  {k:'Talon',     n:'Talon',         j:'タロン',              h:'たろん',          c:'#202040'},
+  {k:'TwistedFate',n:'Twisted Fate', j:'ツイステッドフェイト',h:'つぃすてっどふぇいと',c:'#7a6010'},
+  {k:'Veigar',    n:'Veigar',        j:'ベイガー',            h:'べいがー',        c:'#301870'},
+  {k:'Vex',       n:'Vex',           j:'ヴェックス',          h:'う゛ぇっくす',    c:'#383848'},
+  {k:'Viktor',    n:'Viktor',        j:'ビクター',            h:'びくたー',        c:'#282838'},
+  {k:'Vladimir',  n:'Vladimir',      j:'ブラッドミア',        h:'ぶらっどみあ',    c:'#6a1010'},
+  {k:'Xerath',    n:'Xerath',        j:'ゼラス',              h:'ぜらす',          c:'#104870'},
+  {k:'Yasuo',     n:'Yasuo',         j:'ヤスオ',              h:'やすお',          c:'#384828'},
+  {k:'Yone',      n:'Yone',          j:'ヨネ',                h:'よね',            c:'#282038'},
+  {k:'Zed',       n:'Zed',           j:'ゼド',                h:'ぜど',            c:'#303848'},
+  {k:'Ziggs',     n:'Ziggs',         j:'ジグス',              h:'じぐす',          c:'#787010'},
+  {k:'Zoe',       n:'Zoe',           j:'ゾーイ',              h:'ぞーい',          c:'#5a4070'},
 ];
 
 const ROLES=['TOP','JG','MID','BOT','SUP'];
 const RJ={TOP:'トップ',JG:'ジャングル',MID:'ミッド',BOT:'ボット',SUP:'サポート'};
 const RC={TOP:'#4a7aaa',JG:'#4a9a6a',MID:'#9a7aaa',BOT:'#aa7a4a',SUP:'#aa4a7a'};
 const INI={AurelionSol:'AS',TwistedFate:'TF'};
-
 function ini(c){return INI[c.k]||c.n.slice(0,2);}
 function iconPath(k){return`./icons/${k}.png`;}
 
-// アイコン：画像あれば使い、なければカラーブロック
-function iconEl(c,size,extra){
+function iconEl(c,size){
   const r=size>40?6:4;
   const fs=size>40?12:9;
-  const st=extra||'';
-  return `<img src="${iconPath(c.k)}" width="${size}" height="${size}"
-    style="border-radius:${r}px;object-fit:cover;display:block;flex-shrink:0;${st}"
+  return`<img src="${iconPath(c.k)}" width="${size}" height="${size}"
+    style="border-radius:${r}px;object-fit:cover;display:block;flex-shrink:0;"
     onerror="this.outerHTML='<div style=width:${size}px;height:${size}px;border-radius:${r}px;background:${c.c};display:flex;align-items:center;justify-content:center;font-size:${fs}px;font-weight:700;color:#fff;flex-shrink:0>${ini(c)}</div>'">`;
 }
 
-let sel=null;
-let bP=ROLES.map((r,i)=>({champ:null,role:r,mine:i===2}));
-let rP=ROLES.map(r=>({champ:null,role:r,mine:false}));
-let bB=Array(5).fill(null);
-let rB=Array(5).fill(null);
+// ===== ドラフト状態 =====
+// phase: 'ban' | 'fp-select' | 'pick'
+// banSequence: 青3,赤3,青2,赤2 の順
+// pickSequence: FPに応じて決まる
+
+let phase='ban';
+let fpTeam=null; // 'blue' or 'red'
+
+// BANシーケンス: 青0,1,2 → 赤0,1,2 → 青3,4 → 赤3,4
+const BAN_ORDER=['blue','blue','blue','red','red','red','blue','blue','red','red'];
+let bans={blue:[null,null,null,null,null],red:[null,null,null,null,null]};
+let banStep=0; // 0~9
+
+// PICKシーケンス (FP=blue の場合): blue,red,red,blue,blue,red,red,blue,blue,red
+// FP=red の場合は blue↔red を反転
+const PICK_SEQ_FP= ['fp','op','op','fp','fp','op','op','fp','fp','op']; // fp=ファーストピック側, op=相手側
+let picks={blue:[null,null,null,null,null],red:[null,null,null,null,null]};
+let pickStep=0;
+
+// undoスタック
+let history=[];
+
 let filtered=[...CHAMPS];
 let advTm=null,lastKey='';
 
-function bannedKeys(){return[...bB,...rB].filter(Boolean).map(x=>x.k);}
-function pickedKeys(){return[...bP,...rP].filter(s=>s.champ).map(s=>s.champ.k);}
-function usedKeys(){return[...bannedKeys(),...pickedKeys()];}
+function usedKeys(){
+  const b=[...bans.blue,...bans.red].filter(Boolean).map(c=>c.k);
+  const p=[...picks.blue,...picks.red].filter(Boolean).map(c=>c.k);
+  return[...b,...p];
+}
 
+// ひらがな・カタカナ・英語で検索
 function filterChamps(){
-  const q=document.getElementById('search').value.toLowerCase();
-  filtered=q?CHAMPS.filter(c=>c.n.toLowerCase().includes(q)||c.j.toLowerCase().includes(q)||c.k.toLowerCase().includes(q)):[...CHAMPS];
+  const raw=document.getElementById('search').value;
+  const q=hira2kata(raw).toLowerCase();
+  const qOrig=raw.toLowerCase();
+  if(!q){filtered=[...CHAMPS];}
+  else{
+    filtered=CHAMPS.filter(c=>
+      c.j.toLowerCase().includes(q)||
+      hira2kata(c.h).toLowerCase().includes(q)||
+      c.h.includes(qOrig)||
+      c.n.toLowerCase().includes(qOrig)||
+      c.k.toLowerCase().includes(qOrig)
+    );
+  }
   renderGrid();
 }
 
@@ -209,106 +261,195 @@ function renderGrid(){
   document.getElementById('champ-grid').innerHTML=filtered.map(c=>{
     const idx=CHAMPS.indexOf(c);
     const isUsed=used.includes(c.k);
-    const isSel=sel&&sel.k===c.k;
-    return`<div class="cc${isSel?' sel':''}${isUsed?' used':''}" onclick="selectChamp(${idx})">
+    return`<div class="cc${isUsed?' used':''}" onclick="onChampClick(${idx})">
       <div style="position:relative;display:inline-block;">
         ${iconEl(c,52)}
-        ${isSel?`<div style="position:absolute;inset:0;border:2.5px solid #C89B3C;border-radius:6px;pointer-events:none"></div>`:''}
       </div>
       <div class="cname">${c.j}</div>
     </div>`;
   }).join('');
 }
 
-function selectChamp(idx){
+function onChampClick(idx){
   const c=CHAMPS[idx];
   if(usedKeys().includes(c.k))return;
-  sel=(sel&&sel.k===c.k)?null:c;
+
+  if(phase==='ban'){
+    // BANフェーズ
+    const team=BAN_ORDER[banStep];
+    const slotIdx=bans[team].findIndex(x=>x===null);
+    history.push({type:'ban',team,slotIdx,champ:c,banStep});
+    bans[team][slotIdx]=c;
+    banStep++;
+    if(banStep>=10){
+      phase='fp-select';
+      document.getElementById('fp-select').style.display='block';
+    }
+    renderAll();
+  } else if(phase==='pick'){
+    // PICKフェーズ
+    const seqTeam=PICK_SEQ_FP[pickStep]; // 'fp' or 'op'
+    const team=(seqTeam==='fp')?fpTeam:(fpTeam==='blue'?'red':'blue');
+    const slotIdx=picks[team].findIndex(x=>x===null);
+    history.push({type:'pick',team,slotIdx,champ:c,pickStep});
+    picks[team][slotIdx]=c;
+    pickStep++;
+    renderAll();
+    scheduleAdvice();
+    if(pickStep>=10){
+      // 全員確定
+      fetchAdvice(true);
+    }
+  }
+}
+
+function setFP(team){
+  fpTeam=team;
+  phase='pick';
+  document.getElementById('fp-select').style.display='none';
+  renderAll();
+}
+
+function undoLast(){
+  if(!history.length)return;
+  const last=history.pop();
+  if(last.type==='ban'){
+    bans[last.team][last.slotIdx]=null;
+    banStep=last.banStep;
+    phase='ban';
+    document.getElementById('fp-select').style.display='none';
+  } else {
+    picks[last.team][last.slotIdx]=null;
+    pickStep=last.pickStep;
+    phase='pick';
+  }
+  renderAll();
+  scheduleAdvice();
+}
+
+function resetAll(){
+  phase='ban';fpTeam=null;banStep=0;pickStep=0;history=[];
+  bans={blue:[null,null,null,null,null],red:[null,null,null,null,null]};
+  picks={blue:[null,null,null,null,null],red:[null,null,null,null,null]};
+  document.getElementById('fp-select').style.display='none';
+  document.getElementById('advice-area').innerHTML='';
+  document.getElementById('search').value='';
+  filtered=[...CHAMPS];lastKey='';
+  if(advTm)clearTimeout(advTm);
+  renderAll();
+}
+
+function renderAll(){
   renderGrid();
+  renderBans();
+  renderPicks();
+  renderPhaseBar();
 }
 
-function doAction(type){
-  if(!sel)return;
-  const c=sel;
-  if(usedKeys().includes(c.k))return;
-  if(type==='blue-pick'){const s=bP.find(x=>!x.champ);if(s)s.champ=c;}
-  else if(type==='red-pick'){const s=rP.find(x=>!x.champ);if(s)s.champ=c;}
-  else if(type==='blue-ban'){const i=bB.findIndex(x=>x===null);if(i!==-1)bB[i]=c;}
-  else if(type==='red-ban'){const i=rB.findIndex(x=>x===null);if(i!==-1)rB[i]=c;}
-  sel=null;renderAll();scheduleAdvice();
-}
-
-function removeSlot(team,i){(team==='blue'?bP:rP)[i].champ=null;renderAll();scheduleAdvice();}
-function removeBan(team,i){if(team==='blue')bB[i]=null;else rB[i]=null;renderAll();scheduleAdvice();}
-function renderAll(){renderGrid();renderPicks();renderBans();updatePhase();}
-
-function renderPicks(){
-  const mk=(s,i,side)=>{
-    const f=!!s.champ;
-    const rc=RC[s.role]||'#4a6a8a';
-    let cls='pick-slot ';
-    if(!f)cls+='pe';
-    else{cls+=(side==='blue'?'pb':'pr');if(s.mine)cls+=' pm';}
-    return`<div class="${cls}">
-      <div class="rdot" style="background:${rc}"></div>
-      ${f
-        ?`${iconEl(s.champ,36)}
-          <span class="sname" style="color:${side==='red'?'#f08888':'#c8d8f0'}">${s.champ.j}</span>
-          <span class="rbadge" style="background:${rc}22;color:${rc}">${RJ[s.role]}</span>
-          ${s.mine?'<span class="mbadge">YOU</span>':''}
-          <button class="rm" onclick="removeSlot('${side}',${i})">×</button>`
-        :`<span style="font-size:11px;color:#1e3050">${RJ[s.role]}</span>`
-      }
-    </div>`;
-  };
-  document.getElementById('blue-picks').innerHTML=bP.map((s,i)=>mk(s,i,'blue')).join('');
-  document.getElementById('red-picks').innerHTML=rP.map((s,i)=>mk(s,i,'red')).join('');
+function renderPhaseBar(){
+  const title=document.getElementById('phase-title');
+  const desc=document.getElementById('phase-desc');
+  const count=document.getElementById('phase-count');
+  if(phase==='ban'){
+    title.textContent='BANフェーズ';
+    const team=BAN_ORDER[banStep]==='blue'?'青チーム':'赤チーム';
+    desc.textContent=`次のBAN: ${team}`;
+    count.textContent=`${banStep}/10`;
+  } else if(phase==='fp-select'){
+    title.textContent='FP選択';
+    desc.textContent='ファーストピックのチームを選択';
+    count.textContent='';
+  } else {
+    title.textContent='PICKフェーズ';
+    if(pickStep<10){
+      const seqTeam=PICK_SEQ_FP[pickStep];
+      const team=(seqTeam==='fp')?fpTeam:(fpTeam==='blue'?'red':'blue');
+      const teamName=team==='blue'?'青チーム':'赤チーム';
+      desc.textContent=`次のPICK: ${teamName}`;
+    } else {
+      desc.textContent='全員確定！';
+    }
+    count.textContent=`${pickStep}/10`;
+  }
 }
 
 function renderBans(){
   const mk=(b,i,team)=>{
-    if(!b)return`<div class="ban-slot"></div>`;
-    return`<div class="ban-slot filled" onclick="removeBan('${team}',${i})" title="${b.j}をBANから外す">
+    // 次にBANされる枠をハイライト
+    const isNext=phase==='ban' && BAN_ORDER[banStep]===team && bans[team].filter(Boolean).length===i;
+    if(!b)return`<div class="ban-slot${isNext?' next-ban':''}"></div>`;
+    return`<div class="ban-slot filled">
       <img src="${iconPath(b.k)}" width="40" height="40"
         style="object-fit:cover;filter:grayscale(80%) brightness(0.35);display:block;"
         onerror="this.outerHTML='<div style=width:40px;height:40px;background:${b.c};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;filter:brightness(0.35)>${ini(b)}</div>'">
       <div class="ban-x">✕</div>
     </div>`;
   };
-  document.getElementById('blue-bans').innerHTML=bB.map((b,i)=>mk(b,i,'blue')).join('');
-  document.getElementById('red-bans').innerHTML=rB.map((b,i)=>mk(b,i,'red')).join('');
+  document.getElementById('blue-bans').innerHTML=bans.blue.map((b,i)=>mk(b,i,'blue')).join('');
+  document.getElementById('red-bans').innerHTML=bans.red.map((b,i)=>mk(b,i,'red')).join('');
 }
 
-function updatePhase(){
-  const total=[...bP,...rP].filter(s=>s.champ).length;
-  const el=document.getElementById('phase-ind');
-  if(total===10){el.textContent='全員確定';el.style.color='#5a9a5a';el.style.background='#0a2010';el.style.borderColor='#2a5a2a55';}
-  else if(total>0){el.textContent=`ピック中 ${total}/10`;el.style.color='#C89B3C';el.style.background='#150f00';el.style.borderColor='#C89B3C44';}
-  else{el.textContent='待機中';el.style.color='#3a5070';el.style.background='#0a1020';el.style.borderColor='#1e3050';}
+function renderPicks(){
+  const mk=(c,slotIdx,team)=>{
+    const f=!!c;
+    const rc=RC[ROLES[slotIdx]]||'#4a6a8a';
+    const role=ROLES[slotIdx];
+    const isMine=team==='blue'&&slotIdx===2; // ミッド=YOU
+
+    // 次にPICKされる枠をハイライト
+    let isNext=false;
+    if(phase==='pick'&&pickStep<10){
+      const seqTeam=PICK_SEQ_FP[pickStep]==='fp'?fpTeam:(fpTeam==='blue'?'red':'blue');
+      if(seqTeam===team){
+        const filled=picks[team].filter(Boolean).length;
+        isNext=filled===slotIdx;
+      }
+    }
+
+    let cls='pick-slot ';
+    if(!f)cls+=isNext?'pe next-pick':'pe';
+    else{cls+=(team==='blue'?'pb':'pr');if(isMine)cls+=' pm';}
+
+    return`<div class="${cls}">
+      <div class="rdot" style="background:${rc}"></div>
+      ${f
+        ?`${iconEl(c,36)}
+          <span class="sname" style="color:${team==='red'?'#f08888':'#c8d8f0'}">${c.j}</span>
+          <span class="rbadge" style="background:${rc}22;color:${rc}">${RJ[role]}</span>
+          ${isMine?'<span class="mbadge">YOU</span>':''}`
+        :`<span style="font-size:11px;color:${isNext?'#C89B3C':'#1e3050'}">${RJ[role]}</span>`
+      }
+    </div>`;
+  };
+  document.getElementById('blue-picks').innerHTML=picks.blue.map((c,i)=>mk(c,i,'blue')).join('');
+  document.getElementById('red-picks').innerHTML=picks.red.map((c,i)=>mk(c,i,'red')).join('');
 }
 
 function scheduleAdvice(){
   if(advTm)clearTimeout(advTm);
-  const total=[...bP,...rP].filter(s=>s.champ).length;
+  const total=picks.blue.filter(Boolean).length+picks.red.filter(Boolean).length;
   if(total===0)return;
-  advTm=setTimeout(()=>fetchAdvice(total>=10),total>=10?400:1500);
+  if(total>=10)return;
+  advTm=setTimeout(()=>fetchAdvice(false),1500);
 }
 
-function stateKey(){return bP.map(s=>s.champ?s.champ.k:'_').join()+rP.map(s=>s.champ?s.champ.k:'_').join();}
+function stateKey(){
+  return picks.blue.map(c=>c?c.k:'_').join()+picks.red.map(c=>c?c.k:'_').join();
+}
 
 async function fetchAdvice(isFinal){
   const key=stateKey();
-  if(key===lastKey)return;
+  if(key===lastKey&&!isFinal)return;
   lastKey=key;
   const area=document.getElementById('advice-area');
   area.innerHTML=`<div class="abox"><div class="lrow"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>${isFinal?'最終アドバイスを生成中...':'ピック候補を更新中...'}</span></div></div>`;
   area.scrollIntoView({behavior:'smooth',block:'nearest'});
 
-  const bp=bP.filter(s=>s.champ).map(s=>`${s.champ.j}(${RJ[s.role]})`).join('、')||'なし';
-  const rp=rP.filter(s=>s.champ).map(s=>`${s.champ.j}(${RJ[s.role]})`).join('、')||'なし';
-  const bb=bB.filter(Boolean).map(c=>c.j).join('、')||'なし';
-  const rb=rB.filter(Boolean).map(c=>c.j).join('、')||'なし';
-  const myMid=bP[2];
+  const bp=picks.blue.filter(Boolean).map((c,i)=>`${c.j}(${RJ[ROLES[i]]})`).join('、')||'なし';
+  const rp=picks.red.filter(Boolean).map((c,i)=>`${c.j}(${RJ[ROLES[i]]})`).join('、')||'なし';
+  const bb=bans.blue.filter(Boolean).map(c=>c.j).join('、')||'なし';
+  const rb=bans.red.filter(Boolean).map(c=>c.j).join('、')||'なし';
+  const myMid=picks.blue[2];
 
   const prompt=isFinal
     ?`あなたはLoLの上級コーチです。以下のドラフト確定情報をもとに日本語で詳細アドバイスをください。
@@ -317,7 +458,7 @@ async function fetchAdvice(isFinal){
 相手チーム（赤）: ${rp}
 自チームのBAN: ${bb}
 相手チームのBAN: ${rb}
-自分のチャンピオン（ミッド）: ${myMid.champ?myMid.champ.j:'未確定'}
+自分のチャンピオン（ミッド）: ${myMid?myMid.j:'未確定'}
 
 以下の4つのセクションで回答してください（プレーンテキスト、マークダウン不使用）：
 
@@ -394,18 +535,8 @@ async function fetchAdvice(isFinal){
   }
 }
 
-function resetAll(){
-  sel=null;
-  bP=ROLES.map((r,i)=>({champ:null,role:r,mine:i===2}));
-  rP=ROLES.map(r=>({champ:null,role:r,mine:false}));
-  bB=Array(5).fill(null);rB=Array(5).fill(null);
-  filtered=[...CHAMPS];lastKey='';
-  document.getElementById('advice-area').innerHTML='';
-  document.getElementById('search').value='';
-  renderAll();
-}
-
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
 renderAll();
 </script>
 </body>
