@@ -118,6 +118,18 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
 .role-btn:hover:not(:disabled){opacity:.8;}
 .role-btn:disabled{opacity:0.25;cursor:not-allowed;}
 .role-btn:last-child{margin-bottom:0;}
+
+/* OP.GGデータパネル */
+.opgg-panel{background:#0a1020;border:0.5px solid #1e3050;border-radius:8px;padding:10px;margin-bottom:10px;}
+.opgg-title{font-size:11px;font-weight:700;color:#C89B3C;margin-bottom:8px;display:flex;align-items:center;gap:5px;}
+.tier-badge{font-size:9px;padding:1px 5px;border-radius:4px;font-weight:700;flex-shrink:0;}
+.t1{background:#C89B3C33;color:#C89B3C;}.t2{background:#5b9cf633;color:#5b9cf6;}.t34{background:#2a4a2a33;color:#4a9a4a;}
+.rank-row{display:flex;align-items:center;gap:6px;padding:2px 0;border-bottom:0.5px solid #0d1828;}
+.rank-row:last-child{border-bottom:none;}
+.counter-item{background:#0d1828;border-radius:6px;padding:5px 8px;margin-bottom:4px;}
+.counter-item:last-child{margin-bottom:0;}
+.comp-row{display:flex;gap:16px;flex-wrap:wrap;}
+.comp-stat{font-size:11px;}
 </style>
 </head>
 <body>
@@ -167,6 +179,7 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
     <input class="search-in" id="search" placeholder="チャンピオン名で検索（ひらがな・カタカナ・英語OK）..." oninput="filterChamps()"/>
   </div>
   <div class="champ-grid" id="champ-grid"></div>
+  <div id="opgg-ban-panel"></div>
 
   <div class="bans-section">
     <div class="bans-inner">
@@ -192,6 +205,8 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
       <div id="red-picks"></div>
     </div>
   </div>
+
+  <div id="opgg-pick-panel"></div>
 
   <div class="action-bar">
     <button class="abtn undo" onclick="undoLast()">← 戻す</button>
@@ -602,6 +617,8 @@ function renderAll(){
   renderBans();
   renderPicks();
   renderPhaseBar();
+  renderBanPanel();
+  renderPickPanel();
 }
 
 function renderPhaseBar(){
@@ -741,7 +758,8 @@ async function fetchAdvice(isFinal){
   if(key===lastKey&&!isFinal)return;
   lastKey=key;
   const area=document.getElementById('advice-area');
-  area.innerHTML=`<div class="abox"><div class="lrow"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>${isFinal?'最終アドバイスを生成中...':'ピック候補を更新中...'}</span></div></div>`;
+  const preBuildHtml = isFinal ? buildOpggHtml() : '';
+  area.innerHTML=preBuildHtml+`<div class="abox"><div class="lrow"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>${isFinal?'最終アドバイスを生成中...':'ピック候補を更新中...'}</span></div></div>`;
   area.scrollIntoView({behavior:'smooth',block:'nearest'});
 
   const opTeam=myTeam==='blue'?'red':'blue';
@@ -834,7 +852,7 @@ async function fetchAdvice(isFinal){
           <div class="abody">${esc(text.slice(p.end,end).trim())}</div>
         </div>`;
       }).join('');
-      area.innerHTML=html||`<div class="abox gold"><div class="ahdr g">★ アドバイス</div><div class="abody">${esc(text.trim())}</div></div>`;
+      area.innerHTML=preBuildHtml+(html||`<div class="abox gold"><div class="ahdr g">★ アドバイス</div><div class="abody">${esc(text.trim())}</div></div>`);
     }else{
       const m=text.match(/【おすすめミッドピック[^】]*】([\s\S]*)/);
       const content=m?m[1].trim():text.trim();
@@ -845,6 +863,7 @@ async function fetchAdvice(isFinal){
         </div>
         <div class="abody">${esc(content)}</div>
       </div>`;
+      // ピックフェーズ中はOP.GGパネルは不要
     }
     area.scrollIntoView({behavior:'smooth',block:'nearest'});
   }catch(e){
@@ -853,6 +872,187 @@ async function fetchAdvice(isFinal){
 }
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ===== OP.GGデータ連携 =====
+let champData = null;
+
+// AD系MIDチャンピオン（それ以外はAP判定）
+const DMG_AD = new Set(['Akshan','Fiora','Gangplank','Irelia','Jayce','Naafiri','Pantheon','Qiyana','Riven','Samira','Talon','Tryndamere','Yasuo','Yone','Zed','Zeri','Lucian']);
+// 混合ダメージ
+const DMG_MIXED = new Set(['Corki','Kayle','TwistedFate','Viego','Katarina','Ekko','Kassadin']);
+
+// CC量（高=複数CCあり、低=CCほぼなし）
+const CC_HIGH = new Set(['Ahri','Anivia','Annie','Azir','Galio','Kennen','Lissandra','Malzahar','Morgana','Orianna','Seraphine','Syndra','Veigar','Vex','Viktor','Cassiopeia','Diana','Lux','Neeko','Zyra','Xerath','Ziggs','Brand','Swain','Rumble','Zoe','Velkoz','Ryze']);
+const CC_LOW = new Set(['Akali','AurelionSol','Karthus','Kassadin','Katarina','Tryndamere','Yasuo','Zed','Naafiri','Samira','Vladimir','Talon','Evelynn','Leblanc','Riven','Qiyana','Gangplank','Fizz','Fiora','Jayce']);
+
+// OP.GGチャンピオンデータ読み込み
+(async function(){
+  try {
+    const r = await fetch('./data/champions.json');
+    champData = await r.json();
+    renderBanPanel();
+  } catch(e) {
+    console.warn('OP.GGデータ読み込み失敗:', e);
+  }
+})();
+
+// ティアラベル・クラス変換
+function tierLabel(t){return(['','T1','T2','T3','T4','T5'][t]||'');}
+function tierCls(t){return t===1?'t1':t===2?'t2':'t34';}
+
+// BANフェーズパネル（強チャンプTOP10）
+function renderBanPanel(){
+  const panel = document.getElementById('opgg-ban-panel');
+  if(!panel) return;
+  if(!champData || phase !== 'ban'){panel.innerHTML='';return;}
+
+  const used = usedKeys();
+  const available = Object.values(champData.champions).filter(c => !used.includes(c.key));
+
+  // ティア昇順→勝率降順でソート
+  const top10 = [...available]
+    .sort((a,b) => a.stats.tier!==b.stats.tier ? a.stats.tier-b.stats.tier : b.stats.win_rate-a.stats.win_rate)
+    .slice(0,10);
+
+  const rows = top10.map((c,i) => {
+    const info = CHAMPS.find(ch=>ch.k===c.key)||{k:c.key,n:c.name,j:c.name,c:'#334455'};
+    const banRec = (c.stats.tier<=2 || c.stats.ban_rate>=0.10)
+      ? '<span style="font-size:9px;color:#dd6666;margin-left:2px;">BAN推奨</span>' : '';
+    return `<div class="rank-row">
+      <span style="font-size:9px;color:#3a5070;width:14px;flex-shrink:0;">${i+1}</span>
+      ${iconEl(info,26)}
+      <span style="font-size:11px;color:#c8d8f0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${info.j}</span>
+      <span class="tier-badge ${tierCls(c.stats.tier)}">${tierLabel(c.stats.tier)}</span>
+      <span style="font-size:10px;color:#4a9a5a;width:34px;text-align:right;">${(c.stats.win_rate*100).toFixed(1)}%</span>
+      ${banRec}
+    </div>`;
+  }).join('');
+
+  panel.innerHTML = `<div class="opgg-panel">
+    <div class="opgg-title">⚡ 現パッチ強チャンピオン TOP10（MID）</div>
+    ${rows}
+  </div>`;
+}
+
+// PICKフェーズパネル（カウンター候補＋構成分析）
+function renderPickPanel(){
+  const panel = document.getElementById('opgg-pick-panel');
+  if(!panel) return;
+  if(!champData || phase !== 'pick'){panel.innerHTML='';return;}
+
+  const opTeam = myTeam==='blue'?'red':'blue';
+  const enemyPicks = picks[opTeam].filter(Boolean);
+  const myPicks = picks[myTeam].filter(Boolean);
+
+  if(enemyPicks.length===0 && myPicks.length===0){panel.innerHTML='';return;}
+
+  let html = '<div class="opgg-panel">';
+
+  // ===== 相手ピックへのMIDカウンター候補 =====
+  if(enemyPicks.length > 0){
+    const enemyNames = enemyPicks.map(c => c.n);
+    const scores = [];
+    for(const [key, cData] of Object.entries(champData.champions)){
+      if(usedKeys().includes(key)) continue;
+      const reasons = [];
+      for(const cnt of cData.counters){
+        if(enemyNames.includes(cnt.name)){
+          const info = CHAMPS.find(ch=>ch.n===cnt.name);
+          reasons.push({enemy: info?info.j:cnt.name, wr: cnt.win_rate_vs});
+        }
+      }
+      if(reasons.length > 0){
+        scores.push({key, cData, score: reasons.reduce((s,r)=>s+r.wr,0), reasons});
+      }
+    }
+    scores.sort((a,b)=>b.score-a.score);
+    const top3 = scores.slice(0,3);
+
+    if(top3.length > 0){
+      html += `<div class="opgg-title">⚔ 相手構成へのMIDカウンター候補</div>`;
+      top3.forEach(s => {
+        const info = CHAMPS.find(ch=>ch.k===s.key)||{k:s.key,n:s.cData.name,j:s.cData.name,c:'#334455'};
+        const reasonTxt = s.reasons.slice(0,2).map(r=>`${r.enemy}に${(r.wr*100).toFixed(0)}%`).join('・');
+        html += `<div class="counter-item">
+          <div style="display:flex;align-items:center;gap:8px;">
+            ${iconEl(info,34)}
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13px;font-weight:700;color:#c8d8f0;">${info.j}</div>
+              <div style="font-size:10px;color:#5a7090;">${esc(reasonTxt)}</div>
+            </div>
+            <div style="font-size:11px;color:#4a9a5a;">${(s.cData.stats.win_rate*100).toFixed(1)}%</div>
+          </div>
+        </div>`;
+      });
+    }
+  }
+
+  // ===== 自チーム構成バランス =====
+  if(myPicks.length > 0){
+    let ap=0, ad=0, mixed=0, hiCC=0, loCC=0;
+    myPicks.forEach(c => {
+      if(DMG_AD.has(c.k)) ad++;
+      else if(DMG_MIXED.has(c.k)) mixed++;
+      else ap++;
+      if(CC_HIGH.has(c.k)) hiCC++;
+      else if(CC_LOW.has(c.k)) loCC++;
+    });
+    const dmgLabel = ad>ap+mixed?'物理重視':ap>ad+mixed?'魔法重視':'混合';
+    const dmgColor = ad>ap+mixed?'#f08888':ap>ad+mixed?'#8888f0':'#88c0f8';
+    const ccScore = hiCC - loCC;
+    const ccLabel = ccScore>=2?'高':ccScore<=-1?'低':'中';
+    const ccColor = ccLabel==='高'?'#f0c860':ccLabel==='低'?'#cc6666':'#88c0f8';
+
+    const sep = enemyPicks.length>0?'border-top:0.5px solid #1e3050;padding-top:8px;margin-top:6px;':'';
+    html += `<div style="${sep}">
+      <div class="opgg-title" style="margin-bottom:4px;">📊 自チーム構成分析（${myPicks.length}/5）</div>
+      <div class="comp-row">
+        <div class="comp-stat">ダメージ: <span style="color:${dmgColor};font-weight:700;">${dmgLabel}</span></div>
+        <div class="comp-stat">CC量: <span style="color:${ccColor};font-weight:700;">${ccLabel}</span></div>
+      </div>
+    </div>`;
+  }
+
+  html += '</div>';
+  panel.innerHTML = html;
+}
+
+// ピック確定後OP.GGビルドパネル（HTML文字列を返す）
+function buildOpggHtml(){
+  if(!champData) return '';
+  const myMid = picks[myTeam]?.[2];
+  if(!myMid) return '';
+  const cData = champData.champions[myMid.k];
+  if(!cData) return '';
+
+  const b = cData.build;
+  const items = b.core_items.names.slice(0,3);
+  const runes = b.runes;
+  const skills = b.skills;
+
+  const itemsPct = Math.round(b.core_items.pick_rate*100);
+  const runesPct = Math.round(runes.pick_rate*100);
+  const skillsPct = Math.round(skills.pick_rate*100);
+  const primarySub = runes.primary_runes.slice(1).join(' / ')||'-';
+  const secondarySubs = runes.secondary_runes.join(' / ')||'-';
+  const maxOrder = skills.max_order.join(' → ')||'-';
+  const skillSeq = skills.level_order.slice(0,9).join('-')||'-';
+
+  return `<div class="abox gold" style="margin-bottom:8px;">
+    <div class="ahdr g">⚔ ${esc(myMid.j)} 推奨ビルド（OP.GGデータ）</div>
+    <div class="abody">【コアアイテム】採用率${itemsPct}%
+${items.map((it,i)=>`  ${i+1}. ${esc(it)}`).join('\n')}
+
+【ルーン】採用率${runesPct}%
+  キーストーン: ${esc(runes.primary_runes[0]||'-')}
+  ${esc(runes.primary_page)}: ${esc(primarySub)}
+  ${esc(runes.secondary_page)}: ${esc(secondarySubs)}
+
+【スキルMAX順】採用率${skillsPct}%
+  ${esc(maxOrder)}
+  （序盤: ${esc(skillSeq)}…）</div>
+  </div>`;
+}
 
 // ===== APIキー管理 =====
 function showApiKeyScreen(){
